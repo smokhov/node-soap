@@ -53,6 +53,7 @@ export interface IXmlSignerOptions {
   prefix?: string;
   attrs?: { [key: string]: string };
   existingPrefixes?: { [key: string]: string };
+  location?: { action: string};
 }
 
 export class WSSecurityCert implements ISecurity {
@@ -176,6 +177,16 @@ export class WSSecurityCert implements ISecurity {
       !(this.signer.references.filter((ref) => ref.xpath === timestampXpath).length > 0)
     ) {
       this.signer.addReference(timestampXpath, references);
+    }
+
+    if (this.signerOptions?.location?.action && this.signerOptions?.location?.action !== 'append') {
+      // With the existingPrefixes.location.action option xml-crypto tries to insert a second root node to the xml.
+      // Only the 'append' case works as it appends to the root node.
+      // This is not allowed by xml-dom any longer as it is a security vulnerability.
+      // Refer https://nvd.nist.gov/vuln/detail/CVE-2022-39353
+      // It does not appear this can be fixed as it is a fundamental part of the way xml-crypto works.
+      // Refer https://github.com/yaronn/xml-crypto/blob/701616302d6f0ec752646632203b3dab717751c0/lib/signed-xml.js#L809
+      throw new Error('signerOptions.location.action = "append" is not supported');
     }
 
     this.signer.computeSignature(xmlWithSec, this.signerOptions);

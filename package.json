@@ -5,9 +5,6 @@
   "engines": {
     "node": ">10.0.0"
   },
-  "resolutions": {
-    "@xmldom/xmldom": "0.7.6"
-  },
   "dependencies": {
     "@types/request": "^2.48.4",
     "concat-stream": "^2.0.0",
@@ -19,7 +16,7 @@
     "sax": "^1.2.4",
     "strip-bom": "^4.0.0",
     "uuid": "^7.0.3",
-    "xml-crypto": "^1.5.3"
+    "xml-crypto": "^2.1.5"
   },
   "repository": "https://github.com/oohmedia/node-soap",
   "main": "./index.js",
