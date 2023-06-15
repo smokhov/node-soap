@@ -21,7 +21,7 @@ export interface IAttachment {
   name: string;
   contentId: string;
   mimetype: string;
-  body: NodeJS.ReadableStream;
+  body: Buffer;
 }
 
 /**
@@ -112,10 +112,10 @@ export class HttpClient implements IHttpClient {
       attachments.forEach((attachment) => {
         multipart.push({
           'Content-Type': attachment.mimetype,
-          'Content-Transfer-Encoding': 'binary',
+          'Content-Transfer-Encoding': 'base64',
           'Content-ID': '<' + attachment.contentId + '>',
           'Content-Disposition': 'attachment; filename="' + attachment.name + '"',
-          'body': attachment.body,
+          'body': attachment.body.toString('base64'),
         });
       });
       options.data = `--${boundary}\r\n`;
