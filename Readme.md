@@ -1,3 +1,25 @@
+# This is a fork with changes required by the RPOS ONVIF Server (ONVIF NVT)
+# Initial changes (c) Jeroen Versteege 2015
+# More recent changes (c) Roger Hardiman 2016-2023
+Main changes are
+*  Telling the user when the node-soap library is ready and is listening via an onReady() callback
+*  Passing in the path to the WSDL files
+*  Using the SOAP 2003/05 headers that the ONVIF Standard requires
+*  Including a Content-Length in the SOAP reply
+*  Handling SOAP requests with extra NULL characters after the end of the XML
+*  Passing the full HTTP request object back to the user in the 'request' emit. (Used by RPOS with HTTP Digest Authentication)
+*  Allowing the user to send a HTTP response with a custom HTTP Status Code and HTTP Body. (Used by RPOS with HTTP Digest Authentication) with
+```
+        throw { "statusCode": 401,
+                "httpHeader": {
+                  "key": "WWW-Authenticate",
+                  "value": `Digest realm="rpos-realm", qop="auth", algorithm="MD5", nonce="dcd98b7102dd2f0e8b11d0f600bfb0c093"`
+                },
+                "httpContents": "401 Digest Authentication Required"
+              };
+      };
+```
+
 # Soap [![NPM version][npm-image]][npm-url] [![Downloads][downloads-image]][npm-url] [![Build Status][travis-image]][travis-url]
 > A SOAP client and server for node.js.
 
