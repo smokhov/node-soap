@@ -1,6 +1,6 @@
 # This is a fork with changes required by the RPOS ONVIF Server (ONVIF NVT)
-# Initial changes (c) Jeroen Versteege 2015
-# More recent changes (c) Roger Hardiman 2016-2023
+## Initial changes (c) Jeroen Versteege 2015
+## More recent changes (c) Roger Hardiman 2016-2023
 Main changes are
 *  Telling the user when the node-soap library is ready and is listening via an onReady() callback
 *  Passing in the path to the WSDL files
