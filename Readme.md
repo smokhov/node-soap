@@ -5,8 +5,10 @@
 Please note. Do not use this package in production. It is a temporary fork that contains an ugly patch to cater for broken WSDL's where not all definitions/schemas are published.
 
 If you are stuck with an Typeerror seen below you might have some broken schems on the SOAP server/WSDL.
-    TypeError: Cannot read properties of undefined (reading 'postProcess')
-
+    
+```
+  TypeError: Cannot read properties of undefined (reading 'postProcess')
+```
 
 > A SOAP client and server for node.js.
 
