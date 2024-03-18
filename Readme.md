@@ -1,4 +1,4 @@
-# Soap [![NPM version][npm-image]][npm-url] [![Downloads][downloads-image]][npm-url] [![Build Status][travis-image]][travis-url] [![Coveralls Status][coveralls-image]][coveralls-url] [![Gitter chat][gitter-image]][gitter-url]
+# Soap [![NPM version][npm-image]][npm-url]  [![Coveralls Status][coveralls-image]][coveralls-url]
 
 > This is a temporary fork of the "soap" package by Vinay Pulim  [node-soap](https://github.com/vpulim/node-soap/) 
 
@@ -18,7 +18,7 @@ This module lets you connect to web services using SOAP.  It also provides a ser
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-- [Soap     ](#soap-----)
+- [Soap   ](#soap---)
   - [Features:](#features)
   - [Install](#install)
   - [Support](#support)

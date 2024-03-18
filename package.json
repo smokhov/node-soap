@@ -1,6 +1,6 @@
 {
   "name": "soap-broken-wsdl",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A minimal node SOAP client, forkde from node-soap for broken WSDL",
   "engines": {
     "node": ">=14.0.0"
