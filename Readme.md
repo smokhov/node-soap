@@ -1,6 +1,6 @@
 # This is a fork with changes required by the RPOS ONVIF Server (ONVIF NVT)
 ## Initial changes (c) Jeroen Versteege 2015
-## More recent changes (c) Roger Hardiman 2016-2023
+## More recent changes (c) Roger Hardiman 2016-2024
 Main changes are
 *  Telling the user when the node-soap library is ready and is listening via an onReady() callback
 *  Passing in the path to the WSDL files
@@ -19,6 +19,20 @@ Main changes are
               };
       };
 ```
+* Allowing the override of namespaces (used in Device Service GetServices() and taken from the upstream Node-Soap project and a commit in 2015
+  
+  When using this you can also define the namespace as a attribute to the XML tag
+  ```
+  const reply = {
+            Capabilities : {
+            "tptz:Capabilities": { // note the namespace override with "Namespace:Name" format
+              attributes: { // Add namespace here. Would be nicer to have the namespace at the top level in the envelope but this method is valid
+                'xmlns:tptz' : 'http://www.onvif.org/ver20/ptz/wsdl',
+              },
+            }
+          }
+  };
+  ```
 
 # Soap [![NPM version][npm-image]][npm-url] [![Downloads][downloads-image]][npm-url] [![Build Status][travis-image]][travis-url]
 > A SOAP client and server for node.js.
