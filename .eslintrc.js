@@ -21,5 +21,7 @@ module.exports = {
     '@typescript-eslint/no-this-alias': 0,
     '@typescript-eslint/no-unused-vars': 0,
     '@typescript-eslint/no-use-before-define': 0,
+    'prefer-spread': 'off',
+    'prefer-rest-params': 'off',
   },
 };
