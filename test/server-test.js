@@ -325,7 +325,7 @@ describe('SOAP Server', function () {
   });
 
   /**
-   * In Node.js v16, the req.connection.remoteAddress often returns the IPv6-mapped IPv4 address (::ffff:127.0.0.1), which means the internal server is communicating using an IPv6 format but still using the IPv4 address.
+   * Before Node.js v18, the req.connection.remoteAddress often returns the IPv6-mapped IPv4 address (::ffff:127.0.0.1), which means the internal server is communicating using an IPv6 format but still using the IPv4 address.
    * Since Node.js v18, it appears that the default behavior has changed, and the loopback address is being returned only in IPv6 format as ::1 (pure IPv6 loopback address), instead of using the IPv6-mapped IPv4 address.
    */
   it('should pass the original req to async methods', function (done) {
