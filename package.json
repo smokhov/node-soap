@@ -16,7 +16,7 @@
     "sax": "^1.2.4",
     "strip-bom": "^4.0.0",
     "uuid": "^7.0.3",
-    "xml-crypto": "^2.1.5"
+    "xml-crypto": "^2.1.6"
   },
   "repository": "https://github.com/oohmedia/node-soap",
   "main": "./index.js",
