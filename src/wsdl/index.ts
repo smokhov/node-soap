@@ -359,9 +359,12 @@ export class WSDL {
       }
 
       if (cur.nil === true) {
-        if (this.options.handleNilAsNull) {
+        // if (this.options.handleNilAsNull) {
+        if (true) {
           obj = null;
+          console.log('null value handled')
         } else {
+          console.log('null value not handled')
           return;
         }
       }
