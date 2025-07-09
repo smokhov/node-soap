@@ -36,8 +36,7 @@
     "docs": "typedoc --out docs",
     "test": "NODE_OPTIONS='--openssl-legacy-provider' mocha --timeout 15000 --bail --exit test/*-test.js test/security/*.js",
     "prettier": "prettier --write '**/*.ts' '**/*.js'",
-    "lint": "eslint '**/*.ts'",
-    "start": "NODE_OPTIONS='--openssl-legacy-provider' node index.js"
+    "lint": "eslint '**/*.ts'"
   },
   "license": "MIT",
   "devDependencies": {
