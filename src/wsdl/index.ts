@@ -11,6 +11,7 @@ import fs from 'fs';
 import _ from 'lodash';
 import path from 'path';
 import sax from 'sax';
+// eslint-disable-next-line import/default
 import stripBom from 'strip-bom';
 import url from 'url';
 import { HttpClient } from '../http';

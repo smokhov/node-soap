@@ -53,7 +53,7 @@ export interface IXmlSignerOptions {
   prefix?: string;
   attrs?: { [key: string]: string };
   existingPrefixes?: { [key: string]: string };
-  location?: { action: string};
+  location?: { action: string };
 }
 
 export class WSSecurityCert implements ISecurity {

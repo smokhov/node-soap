@@ -74,24 +74,25 @@ export function promisifyAll(obj, suffix = 'Async') {
     return obj;
   }
 
-  const functionBlackListMap =
-    Object.getOwnPropertyNames(Object.prototype)
-      .reduce((map, functionName) => {
-        map[functionName] = true
-        return map
-      }, {});
+  const functionBlackListMap = Object.getOwnPropertyNames(Object.prototype).reduce(
+    (map, functionName) => {
+      map[functionName] = true;
+      return map;
+    },
+    {}
+  );
 
   for (const key of Object.getOwnPropertyNames(obj)) {
     if (functionBlackListMap[key] || !identifier.test(key)) {
       continue;
     }
 
-    const descriptor = Object.getOwnPropertyDescriptor(obj, key)
+    const descriptor = Object.getOwnPropertyDescriptor(obj, key);
 
     if (!descriptor.get) {
-      const func = obj[key]
+      const func = obj[key];
       if (typeof func === 'function') {
-        obj[`${key}${suffix}`] = pify(func, { multiArgs: true })
+        obj[`${key}${suffix}`] = pify(func, { multiArgs: true });
       }
     }
     obj.___promisified = true;
