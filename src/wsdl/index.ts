@@ -184,6 +184,11 @@ export class WSDL {
     return saxStream;
   }
 
+
+
+
+
+
   public xmlToObject(xml, callback?) {
     const p: any = typeof callback === 'function' ? {} : sax.parser(true, null);
     let objectName = null;
@@ -366,25 +371,32 @@ export class WSDL {
       const topObject = top.object;
       const topSchema = top.schema;
       const name = splitQName(nsName).name;
-
+    
       if (typeof cur.schema === 'string' && (cur.schema === 'string' || cur.schema.split(':')[1] === 'string')) {
         if (typeof obj === 'object' && Object.keys(obj).length === 0) {
           obj = cur.object = this.options.preserveWhitespace ? cur.text || '' : '';
         }
       }
-
+    
+      // Handle nil attribute properly while preserving other attributes
       if (cur.nil === true) {
-        if (this.options.handleNilAsNull) {
-          obj = null;
-        } else {
-          return;
+        // Check for NV == 7701003 attribute and skip handling if match is found
+        const attributes = obj[this.options.attributesKey];
+        if (attributes && attributes.NV === '7701003') {
+          return; // Skip further processing of this element
         }
-      }
-
-      if (_.isPlainObject(obj) && !Object.keys(obj).length) {
+        
+        // Store null value in the valueKey instead of replacing the entire object
+        if (attributes) {
+          // Keep attributes, no other changes
+        } else {
+          // If there are no attributes, set the object to null
+          obj = null;
+        }
+      } else if (_.isPlainObject(obj) && !Object.keys(obj).length) {
         obj = null;
       }
-
+    
       if (topSchema && topSchema[name + '[]']) {
         if (!topObject[name]) {
           topObject[name] = [];
@@ -398,7 +410,7 @@ export class WSDL {
       } else {
         topObject[name] = obj;
       }
-
+    
       if (cur.id) {
         refs[cur.id].obj = obj;
       }
