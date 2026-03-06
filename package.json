@@ -13,7 +13,7 @@
     "follow-redirects": "^1.15.11",
     "formidable": "^3.5.4",
     "sax": "^1.5.0",
-    "whatwg-mimetype": "4.0.0",
+    "whatwg-mimetype": "5.0.0",
     "xml-crypto": "^6.1.2"
   },
   "repository": {
