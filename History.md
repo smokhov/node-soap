@@ -1,3 +1,14 @@
+# 1.10.0 / 2026-07-14
+
+- [ENHANCEMENT] Add `arrayWithChoiceTag` option that provides support for sequence with choice semantics (#1496)
+- [FIX] Fix WSSecurityCert header inside Envelope when no SOAP headers exist (#1489)
+- [FIX] Do not extend IExpressApp from http.Server, add optional address prop (#1507)
+- [FIX] Fix coverage image markdown in readme (#1506)
+- [MAINTENANCE] Bump dependencies (#1508)
+- [MAINTENANCE] Update coverage badge (#1504)
+- [MAINTENANCE] Bump actions/checkout to 7.0.0 (#1505)
+- [MAINTENANCE] Disable coderabbit auto review (#1497)
+
 # 1.9.3 / 2026-05-20
 
 - [FIX] No code changes, just rebuild the artifacts
