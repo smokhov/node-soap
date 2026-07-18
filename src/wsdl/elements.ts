@@ -242,12 +242,12 @@ export class ElementElement extends Element {
     let type: any = this.$type || this.$ref;
     if (type) {
       type = splitQName(type);
+      const typeStorage = this.$type ? definitions.descriptions.types : definitions.descriptions.elements;
       const typeName: string = type.name;
       const useSchemaXmlns = !!findNs(type.prefix, this.definitionsXmlns, definitions.xmlns) || !!findNs(this.targetNSAlias, this.definitionsXmlns, definitions.xmlns) || this.forceUseSchemaXmlns;
       const ns = findNs(type.prefix, xmlns, this.xmlns, useSchemaXmlns ? this.schemaXmlns : undefined, this.definitionsXmlns, definitions.xmlns);
       const schema = definitions.schemas[ns];
       const typeElement = schema && (this.$type ? schema.complexTypes[typeName] || schema.types[typeName] : schema.elements[typeName]);
-      const typeStorage = this.$type ? definitions.descriptions.types : definitions.descriptions.elements;
 
       // Use namespace + typeName as cache key to avoid conflicts between schemas
       const cacheKey = ns ? `${ns}::${typeName}` : typeName;
