@@ -5,13 +5,13 @@ var fs = require('fs'),
   http = require('http'),
   stream = require('stream'),
   assert = require('assert'),
-  _ = require('lodash'),
   sinon = require('sinon'),
-  wsdl = require('../lib/wsdl');
+  wsdl = require('../lib/wsdl'),
+  utils = require('../lib/utils');
 
 [
-  { suffix: '', options: {} },
-  { suffix: ' (with streaming)', options: { stream: true } },
+  { suffix: '', options: { useEmptyTag: false } },
+  { suffix: ' (with streaming)', options: { stream: true, useEmptyTag: false } },
 ].forEach(function (meta) {
   describe('SOAP Client' + meta.suffix, function () {
     var baseUrl = 'http://127.0.0.1:80';
@@ -91,7 +91,7 @@ var fs = require('fs'),
       });
     });
 
-    it('should allow customization of envelope', function (done) {
+    it('should allow customization of client envelope key', function (done) {
       soap.createClient(
         __dirname + '/wsdl/default_namespace.wsdl',
         Object.assign({ envelopeKey: 'soapenv' }, meta.options),
@@ -100,6 +100,38 @@ var fs = require('fs'),
           assert.ifError(err);
 
           client.MyOperation({}, function (err, result) {
+            assert.notEqual(client.lastRequest.indexOf('xmlns:soapenv='), -1);
+            done();
+          });
+        },
+        baseUrl,
+      );
+    });
+
+    it('should skip creating header XML on empty <Header/> and security when toXML is empty', function (done) {
+      soap.createClient(
+        __dirname + '/wsdl/default_namespace.wsdl',
+        Object.assign({ envelopeKey: 'soapenv', useEmptyTag: true, wsdl_headers: '<soapenv:Header/>' }, meta.options),
+        function (err, client) {
+          var join = require('path').join;
+          var ClientSSLSecurity = require('../').ClientSSLSecurity;
+          var certBuffer = fs.readFileSync(join(__dirname, '.', 'certs', 'agent2-cert.pem')),
+            keyBuffer = fs.readFileSync(join(__dirname, '.', 'certs', 'agent2-key.pem')),
+            instance;
+
+          // Creates a Security instance that has no toXML() (empty string)
+          instance = new ClientSSLSecurity(keyBuffer, certBuffer, certBuffer);
+          var xml = instance.toXML();
+          xml.should.be.exactly('');
+
+          client.setSecurity(instance);
+          client.addSoapHeader('');
+
+          assert.ok(client);
+          assert.ifError(err);
+
+          client.MyOperation({}, function (err, result) {
+            assert.equal(client.lastRequest.indexOf('soapenv:Header'), -1);
             assert.notEqual(client.lastRequest.indexOf('xmlns:soapenv='), -1);
             done();
           });
@@ -214,13 +246,7 @@ var fs = require('fs'),
                 .filter((part) => part)
                 .map(parsePartHeaders);
               res.setHeader('Content-Type', 'application/json');
-              res.end(
-                JSON.stringify({
-                  contentType: headers['content-type'],
-                  parts: parts,
-                }),
-                'utf8',
-              );
+              res.end(JSON.stringify({ contentType: headers['content-type'], parts: parts }), 'utf8');
             });
           })
           .listen(port, hostname, function () {
@@ -311,13 +337,7 @@ var fs = require('fs'),
                 .filter((part) => part)
                 .map(parsePartHeaders);
               res.setHeader('Content-Type', 'application/json');
-              res.end(
-                JSON.stringify({
-                  contentType: headers['content-type'],
-                  parts: parts,
-                }),
-                'utf8',
-              );
+              res.end(JSON.stringify({ contentType: headers['content-type'], parts: parts }), 'utf8');
             });
           })
           .listen(port, hostname, done);
@@ -488,8 +508,13 @@ var fs = require('fs'),
             client.MyOperation(
               {},
               function () {
-                assert.ok(client.lastRequestHeaders.Host.indexOf(':443') > -1);
-                done();
+                try {
+                  assert.ok(client.lastRequestHeaders.Host.indexOf(':443') > -1);
+                  done();
+                } catch (err) {
+                  done(err);
+                  throw err;
+                }
               },
               null,
               { 'test-header': 'test' },
@@ -741,7 +766,7 @@ var fs = require('fs'),
                 assert.ok(client.lastRequestHeaders);
                 assert.ok(client.lastRequest);
                 assert.equal(client.lastRequestHeaders['Content-Type'], 'application/soap+xml; charset=utf-8; action="MyOperation"');
-                assert.notEqual(client.lastRequest.indexOf('xmlns:soap="http://www.w3.org/2003/05/soap-envelope"'), -1);
+                assert.notEqual(client.lastRequest.indexOf('xmlns:soap=\"http://www.w3.org/2003/05/soap-envelope\"'), -1);
                 assert(!client.lastRequestHeaders.SOAPAction);
                 done();
               },
@@ -1060,7 +1085,8 @@ var fs = require('fs'),
               assert.ok(client.lastRequest);
               assert.ok(client.lastMessage);
               assert.ok(client.lastEndpoint);
-              console.log(client.lastMessage);
+              // Commented out for production test due to verbosity.
+              //console.log(client.lastMessage)
               assert.strictEqual(client.lastMessage, message);
               done();
             });
@@ -1569,7 +1595,7 @@ var fs = require('fs'),
           function (err, client) {
             assert.ok(client);
             var pathToArrayContainer = 'TimesheetV201511Mobile.TimesheetV201511MobileSoap.AddTimesheet.input.input.PeriodList';
-            var arrayParameter = _.get(client.describe(), pathToArrayContainer)['PeriodType[]'];
+            var arrayParameter = utils.getByPath(client.describe(), pathToArrayContainer)['PeriodType[]'];
             assert.ok(arrayParameter);
             client.AddTimesheet({ input: { PeriodList: { PeriodType: [{ PeriodId: '1' }] } } }, function () {
               var sentInputContent = client.lastRequest.substring(client.lastRequest.indexOf('<input>') + '<input>'.length, client.lastRequest.indexOf('</input>'));
@@ -1587,7 +1613,7 @@ var fs = require('fs'),
           function (err, client) {
             assert.ok(client);
             var pathToArrayContainer = 'SampleArrayServiceImplService.SampleArrayServiceImplPort.createWebOrder.input.order';
-            var arrayParameter = _.get(client.describe(), pathToArrayContainer)['orderDetails[]'];
+            var arrayParameter = utils.getByPath(client.describe(), pathToArrayContainer)['orderDetails[]'];
             assert.ok(arrayParameter);
             const input = {
               ':clientId': 'test',
@@ -1614,7 +1640,7 @@ var fs = require('fs'),
           function (err, client) {
             assert.ok(client);
             var pathToArrayContainer = 'SampleArrayServiceImplService.SampleArrayServiceImplPort.createWebOrder.input.order';
-            var arrayParameter = _.get(client.describe(), pathToArrayContainer)['orderDetails[]'];
+            var arrayParameter = utils.getByPath(client.describe(), pathToArrayContainer)['orderDetails[]'];
             assert.ok(arrayParameter);
             const input = {
               ':clientId': 'test',
@@ -1643,22 +1669,13 @@ var fs = require('fs'),
           function (err, client) {
             assert.ok(client);
             var pathToArrayContainer = 'TimesheetV201511Mobile.TimesheetV201511MobileSoap.AddTimesheet.input.input.PeriodList';
-            var arrayParameter = _.get(client.describe(), pathToArrayContainer)['PeriodType[]'];
+            var arrayParameter = utils.getByPath(client.describe(), pathToArrayContainer)['PeriodType[]'];
             assert.ok(arrayParameter);
-            client.AddTimesheet(
-              {
-                input: {
-                  PeriodList: {
-                    PeriodType: [{ PeriodId: '1' }, { PeriodId: '2' }],
-                  },
-                },
-              },
-              function () {
-                var sentInputContent = client.lastRequest.substring(client.lastRequest.indexOf('<input>') + '<input>'.length, client.lastRequest.indexOf('</input>'));
-                assert.equal(sentInputContent, '<PeriodList><PeriodType><PeriodId>1</PeriodId><PeriodId>2</PeriodId></PeriodType></PeriodList>');
-                done();
-              },
-            );
+            client.AddTimesheet({ input: { PeriodList: { PeriodType: [{ PeriodId: '1' }, { PeriodId: '2' }] } } }, function () {
+              var sentInputContent = client.lastRequest.substring(client.lastRequest.indexOf('<input>') + '<input>'.length, client.lastRequest.indexOf('</input>'));
+              assert.equal(sentInputContent, '<PeriodList><PeriodType><PeriodId>1</PeriodId><PeriodId>2</PeriodId></PeriodType></PeriodList>');
+              done();
+            });
           },
           baseUrl,
         );
@@ -1673,22 +1690,13 @@ var fs = require('fs'),
             assert.ok(client);
             assert.ok(client.wsdl.options.namespaceArrayElements === true);
             var pathToArrayContainer = 'TimesheetV201511Mobile.TimesheetV201511MobileSoap.AddTimesheet.input.input.PeriodList';
-            var arrayParameter = _.get(client.describe(), pathToArrayContainer)['PeriodType[]'];
+            var arrayParameter = utils.getByPath(client.describe(), pathToArrayContainer)['PeriodType[]'];
             assert.ok(arrayParameter);
-            client.AddTimesheet(
-              {
-                input: {
-                  PeriodList: {
-                    PeriodType: [{ PeriodId: '1' }, { PeriodId: '2' }],
-                  },
-                },
-              },
-              function () {
-                var sentInputContent = client.lastRequest.substring(client.lastRequest.indexOf('<input>') + '<input>'.length, client.lastRequest.indexOf('</input>'));
-                assert.equal(sentInputContent, '<PeriodList><PeriodType><PeriodId>1</PeriodId></PeriodType><PeriodType><PeriodId>2</PeriodId></PeriodType></PeriodList>');
-                done();
-              },
-            );
+            client.AddTimesheet({ input: { PeriodList: { PeriodType: [{ PeriodId: '1' }, { PeriodId: '2' }] } } }, function () {
+              var sentInputContent = client.lastRequest.substring(client.lastRequest.indexOf('<input>') + '<input>'.length, client.lastRequest.indexOf('</input>'));
+              assert.equal(sentInputContent, '<PeriodList><PeriodType><PeriodId>1</PeriodId></PeriodType><PeriodType><PeriodId>2</PeriodId></PeriodType></PeriodList>');
+              done();
+            });
           },
           baseUrl,
         );
@@ -1878,7 +1886,7 @@ var fs = require('fs'),
             assert.ifError(err);
 
             client.MyOperation({}, function (err, result) {
-              assert.notEqual(client.lastRequest.indexOf('xmlns:soap="http://example.com/v1"'), -1);
+              assert.notEqual(client.lastRequest.indexOf('xmlns:soap=\"http://example.com/v1\"'), -1);
               done();
             });
           },
@@ -2242,7 +2250,8 @@ describe('Client posting complex body', () => {
           assert.ok(client.lastMessage);
           assert.ok(client.lastEndpoint);
 
-          console.log(client.lastMessage);
+          // Commented out for production test due to verbosity.
+          //console.log(client.lastMessage);
           const expectedBody =
             '<registrationMessages:registerUserRequest xmlns:registrationMessages="http://test-soap.com/api/registration/messages" xmlns="http://test-soap.com/api/registration/messages"><registrationMessages:id>ID00000000000000000000000000000000</registrationMessages:id><registrationMessages:lastName>Doe</registrationMessages:lastName><registrationMessages:firstName>John</registrationMessages:firstName><registrationMessages:dateOfBirth>1970-01-01</registrationMessages:dateOfBirth><registrationMessages:correspondenceLanguage>ENG</registrationMessages:correspondenceLanguage><registrationMessages:emailAddress>jdoe@doe.com</registrationMessages:emailAddress><registrationMessages:lookupPermission>ALLOWED</registrationMessages:lookupPermission><registrationMessages:companyAddress><ct:address xmlns:ct="http://test-soap.com/api/common/types"><ct:streetName>Street</ct:streetName><ct:postalCode>Code</ct:postalCode><ct:city>City</ct:city><ct:countryCode>US</ct:countryCode></ct:address><ct:companyName xmlns:ct="http://test-soap.com/api/common/types">ACME</ct:companyName></registrationMessages:companyAddress></registrationMessages:registerUserRequest>';
           assert.strictEqual(client.lastMessage, expectedBody);

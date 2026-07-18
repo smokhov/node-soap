@@ -8,11 +8,9 @@ import { AxiosResponseHeaders, RawAxiosResponseHeaders } from 'axios';
 import { randomUUID } from 'crypto';
 import debugBuilder from 'debug';
 import { EventEmitter } from 'events';
-import getStream = require('get-stream');
-import * as _ from 'lodash';
 import { HttpClient } from './http';
 import { IHeaders, IHttpClient, IMTOMAttachments, IOptions, ISecurity, SoapMethod, SoapMethodAsync } from './types';
-import { findPrefix } from './utils';
+import { findPrefix, isObject, once, streamToText } from './utils';
 import { WSDL } from './wsdl';
 import { IPort, OperationElement, ServiceElement } from './wsdl/elements';
 
@@ -25,8 +23,7 @@ export interface ISoapError extends Error {
   body?;
 }
 
-// tslint:disable unified-signatures
-// tslint:disable-next-line:interface-name
+//eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export interface Client {
   emit(event: 'request', xml: string, eid: string): boolean;
   emit(event: 'message', message: string, eid: string): boolean;
@@ -43,6 +40,7 @@ export interface Client {
   on(event: 'response', listener: (body: any, response: any, eid: string) => void): this;
 }
 
+//eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export class Client extends EventEmitter {
   [method: string]: any;
   /** contains last full soap request for client logging */
@@ -119,13 +117,13 @@ export class Client extends EventEmitter {
     this.httpHeaders = null;
   }
 
-  public addBodyAttribute(bodyAttribute: any, name?: string, namespace?: string, xmlns?: string): void {
+  public addBodyAttribute(bodyAttribute: any): void {
     if (!this.bodyAttributes) {
       this.bodyAttributes = [];
     }
     if (typeof bodyAttribute === 'object') {
       let composition = '';
-      Object.getOwnPropertyNames(bodyAttribute).forEach((prop, idx, array) => {
+      Object.getOwnPropertyNames(bodyAttribute).forEach((prop) => {
         composition += ' ' + prop + '="' + bodyAttribute[prop] + '"';
       });
       bodyAttribute = composition;
@@ -181,6 +179,8 @@ export class Client extends EventEmitter {
     this.wsdl.options.envelopeKey = options.envelopeKey || 'soap';
     this.wsdl.options.envelopeSoapUrl = options.envelopeSoapUrl || 'http://schemas.xmlsoap.org/soap/envelope/';
     this.wsdl.options.preserveWhitespace = !!options.preserveWhitespace;
+    this.wsdl.options.forceUseSchemaXmlns = !!options.forceUseSchemaXmlns;
+
     const igNs = options.ignoredNamespaces;
     if (igNs !== undefined && typeof igNs === 'object') {
       if ('override' in igNs) {
@@ -190,6 +190,10 @@ export class Client extends EventEmitter {
           }
         }
       }
+    }
+
+    if (options.overrideElementKey !== undefined) {
+      this.wsdl.options.overrideElementKey = options.overrideElementKey;
     }
     if (options.overrideRootElement !== undefined) {
       this.wsdl.options.overrideRootElement = options.overrideRootElement;
@@ -273,12 +277,11 @@ export class Client extends EventEmitter {
     switch (typeof soapHeader) {
       case 'object':
         return this.wsdl.objectToXML(soapHeader, name, namespace, xmlns, true);
-      case 'function':
+      case 'function': {
+        //eslint-disable-next-line @typescript-eslint/no-this-alias
         const _this = this;
-        // arrow function does not support arguments variable
-        // tslint:disable-next-line
-        return function () {
-          const result = soapHeader.apply(null, arguments);
+        return (...args: any) => {
+          const result = soapHeader.apply(null, [...args]);
 
           if (typeof result === 'object') {
             return _this.wsdl.objectToXML(result, name, namespace, xmlns, true);
@@ -286,6 +289,7 @@ export class Client extends EventEmitter {
             return result;
           }
         };
+      }
       default:
         return soapHeader;
     }
@@ -301,6 +305,7 @@ export class Client extends EventEmitter {
     const envelopeSoapUrl = this.wsdl.options.envelopeSoapUrl;
     const ns: string = defs.$targetNamespace;
     let encoding = '';
+    //eslint-disable-next-line no-useless-assignment
     let message = '';
     let xml: string = null;
     let soapAction: string;
@@ -346,12 +351,11 @@ export class Client extends EventEmitter {
       }
       if (!result) {
         ['Response', 'Out', 'Output'].forEach((term) => {
-          if (obj.Body.hasOwnProperty(name + term)) {
+          if (Object.hasOwnProperty.call(obj.Body, name + term)) {
             return (result = obj.Body[name + term]);
           }
         });
       }
-
       callback(null, result, body, obj.Header, xml, response.mtomResponseAttachments);
     };
 
@@ -365,7 +369,7 @@ export class Client extends EventEmitter {
         if (!output || !output.$lookupTypes) {
           debug('Response element is not present. Unable to convert response xml to json.');
           //  If the response is JSON then return it as-is.
-          const json = _.isObject(body) ? body : tryJSONparse(body);
+          const json = isObject(body) ? body : tryJSONparse(body);
           if (json) {
             return callback(null, response, json, undefined, xml);
           }
@@ -402,11 +406,14 @@ export class Client extends EventEmitter {
     if (this.security && this.security.addOptions) {
       this.security.addOptions(options);
     }
+    if (this.security && typeof this.security?.toXML !== 'function') {
+      this.security.toXML = () => '';
+    }
 
     if (style === 'rpc' && (input.parts || input.name === 'element' || args === null)) {
       assert.ok(!style || style === 'rpc', 'invalid message definition for document style binding');
       message = this.wsdl.objectToRpcXML(name, args, alias, ns, input.name !== 'element');
-      method.inputSoap === 'encoded' && (encoding = 'soap:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" ');
+      if (method.inputSoap === 'encoded') encoding = 'soap:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" ';
     } else {
       assert.ok(!style || style === 'document', 'invalid message definition for rpc style binding');
       // pass `input.$lookupType` if `input.$type` could not be found
@@ -437,7 +444,7 @@ export class Client extends EventEmitter {
       encoding +
       this.wsdl.xmlnsInEnvelope +
       '>' +
-      (decodedHeaders || this.security
+      (decodedHeaders || (this.security && (this.security.toXML() || this.security.postProcess))
         ? '<' +
           envelopeKey +
           ':Header' +
@@ -494,13 +501,13 @@ export class Client extends EventEmitter {
     const tryJSONparse = (body) => {
       try {
         return JSON.parse(body);
-      } catch (err) {
+      } catch {
         return undefined;
       }
     };
 
     if (this.streamAllowed && typeof this.httpClient.requestStream === 'function') {
-      callback = _.once(callback);
+      callback = once(callback);
       const startTime = Date.now();
       const onError = (err) => {
         this.lastResponse = null;
@@ -511,7 +518,7 @@ export class Client extends EventEmitter {
         if (this.returnSaxStream || !err.response || !err.response.data) {
           callback(err, undefined, undefined, undefined, xml);
         } else {
-          err.response.data.on('close', (e) => {
+          err.response.data.on('close', () => {
             callback(err, undefined, undefined, undefined, xml);
           });
           err.response.data.on('data', (e) => {
@@ -528,7 +535,7 @@ export class Client extends EventEmitter {
         // When the output element cannot be looked up in the wsdl,
         // play it safe and don't stream
         if (res.status !== 200 || !output || !output.$lookupTypes) {
-          getStream(res.data).then((body) => {
+          streamToText(res.data).then((body) => {
             this.lastResponse = body;
             this.lastElapsedTime = Date.now() - startTime;
             this.lastResponseHeaders = res && res.headers;
