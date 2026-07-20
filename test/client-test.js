@@ -2161,7 +2161,6 @@ describe('Uncategorised', function () {
       baseUrl,
     );
   });
-
 });
 
 describe('Client using stream and returnSaxStream', () => {
@@ -2380,8 +2379,4 @@ describe('Connection header', () => {
       baseUrl,
     );
   });
-
-
-
 });
-
