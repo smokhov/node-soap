@@ -2130,6 +2130,38 @@ describe('Uncategorised', function () {
         done();
       });
   });
+
+  it('should replace the InputMessage "Request" element for arg elements', function (done) {
+    soap.createClient(
+      // p1
+      __dirname + '/wsdl/default_namespace.wsdl',
+      // p2 -- options
+      {
+        ignoredNamespaces: true,
+        ignoreBaseNameSpaces: true,
+      },
+      // p3 -- callback
+      function (err, client) {
+        assert.ok(client);
+        assert.ifError(err);
+
+        client.MyService.MyServicePort.MyOperation(
+          { parameter: 'dummy', marameter: 'mummy' },
+          function (err, result, resp, soap, req) {
+            assert.ok(req.indexOf('</Request>') === -1);
+            done();
+          },
+          {
+            overrideBaseElement: true,
+          },
+          null,
+        );
+      },
+      // p4 -- endpoint
+      baseUrl,
+    );
+  });
+
 });
 
 describe('Client using stream and returnSaxStream', () => {
@@ -2348,27 +2380,8 @@ describe('Connection header', () => {
       baseUrl,
     );
   });
+
+
+
 });
 
-it('should replace the InputMessage "Request" element for arg elements', function (done) {
-  soap.createClient(
-    __dirname + '/wsdl/default_namespace.wsdl',
-    {
-      ignoredNamespaces: true,
-      ignoreBaseNameSpaces: true,
-    },
-    function (err, client) {
-      assert.ok(client);
-      client.MyService.MyServicePort.MyOperation(
-        { parameter: 'dummy' },
-        function (err, result, resp, soap, req) {
-          assert.equal(req.indexOf('</Request>'), -1);
-        },
-        {
-          overrideBaseElement: false,
-        },
-      );
-      done();
-    },
-  );
-});
