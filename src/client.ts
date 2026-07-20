@@ -412,7 +412,7 @@ export class Client extends EventEmitter {
 
     if (style === 'rpc' && (input.parts || input.name === 'element' || args === null)) {
       assert.ok(!style || style === 'rpc', 'invalid message definition for document style binding');
-      message = this.wsdl.objectToRpcXML(name, args, alias, ns, input.name !== 'element', options);
+      message = this.wsdl.objectToRpcXML(name, args, alias, ns, input.name !== 'element');
       if (method.inputSoap === 'encoded') encoding = 'soap:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" ';
     } else {
       assert.ok(!style || style === 'document', 'invalid message definition for rpc style binding');
