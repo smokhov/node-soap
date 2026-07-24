@@ -205,6 +205,11 @@ export function xmlEscape(obj) {
   return obj;
 }
 
+// https://github.com/vpulim/node-soap/issues/1510
+export function xmlEscapeAttr(obj) {
+  return xmlEscape(obj).replace(/\t/g, '&#x9;').replace(/\r/g, '&#xD;').replace(/\n/g, '&#xA;');
+}
+
 export function parseMTOMResp(payload: Buffer, boundary: string, callback: (err?: Error, resp?: IMTOMAttachments) => void) {
   return import('formidable')
     .then(({ MultipartParser }) => {
