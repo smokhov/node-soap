@@ -14,7 +14,7 @@ import * as sax from 'sax';
 import { HttpClient } from '../http';
 import { NamespaceContext } from '../nscontext';
 import { IOptions } from '../types';
-import { findPrefix, splitQName, stripBom, TNS_PREFIX, xmlEscape, xmlEscapeAttr } from '../utils';
+import { findPrefix, splitQName, stripBom, TNS_PREFIX, xmlEscape } from '../utils';
 import * as elements from './elements';
 
 const debug = debugBuilder('node-soap');
@@ -1016,7 +1016,7 @@ export class WSDL {
         }
       } else {
         // https://github.com/vpulim/node-soap/issues/1510
-        attr += ` ${k}="${xmlEscapeAttr(v)}"`;
+        attr += ` ${k}="${xmlEscape(v)}"`;
       }
     });
 
