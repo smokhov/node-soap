@@ -6,10 +6,7 @@ const assert = require('assert');
 
 const { open_wsdl } = require('../lib/wsdl');
 
-const wsdlXml = fs.readFileSync(
-  path.join(__dirname, '/wsdl/sequence_models.wsdl'),
-  'utf8'
-);
+const wsdlXml = fs.readFileSync(path.join(__dirname, '/wsdl/sequence_models.wsdl'), 'utf8');
 
 function posOf(xml, localName) {
   const re = new RegExp(`<[^/][^>\\s]*:?${localName}(?=[\\s>])`);

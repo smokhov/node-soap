@@ -1421,7 +1421,7 @@ export class WSDL {
         if (ch && (ch.name === 'sequence' || ch.name === 'choice' || ch.name === 'all' || ch.name === 'group')) {
           return ch;
         }
-        
+
         if (ch && (ch.name === 'complexContent' || ch.name === 'simpleContent' || ch.name === 'extension' || ch.name === 'restriction')) {
           const g = firstGroup(ch);
           if (g) return g;
@@ -1498,8 +1498,8 @@ export class WSDL {
         if (n.name === 'element') {
           const nm = getLocalFromElement(n);
           if (nm) {
-            out.push(nm)
-          };
+            out.push(nm);
+          }
         } else if (n.name === 'group') {
           const comp = resolveGroupCompositor(n);
           visit(comp);
@@ -1535,7 +1535,7 @@ export class WSDL {
 
     const orderIndex = this._getOrderIndexFor(schemaObject, schema);
     if (!orderIndex.size) {
-      return keys.map(k => k.key);
+      return keys.map((k) => k.key);
     }
 
     keys.sort((a, b) => {
@@ -1545,23 +1545,23 @@ export class WSDL {
       return a.idx - b.idx;
     });
 
-    return keys.map(k => k.key);
+    return keys.map((k) => k.key);
   }
 
   private _addSpecialKeys(obj: any, keys: string[]) {
     const attrsKey = this.options.attributesKey;
-    const xmlKey   = this.options.xmlKey;
+    const xmlKey = this.options.xmlKey;
     const valueKey = this.options.valueKey;
 
     const frontSpecials = [];
     if (Object.prototype.hasOwnProperty.call(obj, attrsKey)) {
       frontSpecials.push(attrsKey);
-    }   
+    }
 
     const tailSpecials = [];
     for (const k of Object.keys(obj)) {
       if (k === xmlKey || k === valueKey) tailSpecials.push(k);
-    }   
+    }
 
     return [...frontSpecials, ...keys, ...tailSpecials];
   }
