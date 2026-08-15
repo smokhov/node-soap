@@ -1456,7 +1456,7 @@ export class WSDL {
               const comp = resolveGroupCompositor(child);
               walkGroup(comp);
             } else if (child.name === 'choice') {
-              let snapshotPos = pos;
+              const snapshotPos = pos;
               const names = collectChoiceAlternatives(child);
               for (const name of names) {
                 if (!index.has(name)) index.set(name, snapshotPos);
@@ -1471,7 +1471,7 @@ export class WSDL {
 
         case 'choice': {
           const names = collectChoiceAlternatives(node);
-          let snapshotPos = pos;
+          const snapshotPos = pos;
           for (const name of names) {
             if (!index.has(name)) index.set(name, snapshotPos);
           }
