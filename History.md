@@ -1,3 +1,16 @@
+# 1.11.0 / 2026-08-26
+
+- [SECURITY] Generate nonce using cryptographically secure random bytes (#1516)
+- [ENHANCEMENT] Allow options in objectToDocumentXML when calling a method (#1509)
+- [ENHANCEMENT] Add support for the group element (#1348)
+- [FIX] Drop accidentally added config for continue plugin
+- [FIX] Adjust xmlEscape to escape \n, \r, and \t (#1512)
+- [DOC] Add dependencies policy (#1518)
+- [MAINTENANCE] Bump actions/checkout from 7.0.0 to 7.0.1 (#1517)
+- [MAINTENANCE] Remove OPENSSL_ENABLE_SHA1_SIGNATURES=1 as it is not required anymore (#1418)
+- [MAINTENANCE] Bump actions/setup-node from 6.4.0 to 7.0.0 (#1513)
+- [MAINTENANCE] Bump axios to 1.18.1 as well as body-parser and brace-expansion (#1511)
+
 # 1.10.0 / 2026-07-14
 
 - [ENHANCEMENT] Add `arrayWithChoiceTag` option that provides support for sequence with choice semantics (#1496)
