@@ -7,3 +7,7 @@ If you discover a security vulnerability, please report it to current maintainer
 ## Security Updates
 
 We will notify users about security updates through our [GitHub repository](https://github.com/node-soap/releases).
+
+## Dependencies
+
+We use `NPM` and rules from local `.npmrc` file.

@@ -4,6 +4,13 @@ Thank you for your support! node-soap wouldn't be where it is today without cont
 
 Because SOAP Web Services can differ amongst implementations, there is high risk involved in making changes. What works for your WSDL, might not work with another. It is therefore _essential_ that contributors to node-soap adhere to these guidelines.
 
+## Dependencies
+
+- Please use `npm`.
+- Do not install dependencies published within the last 5 days.
+- Do not add dependencies that use install lifecycle scripts (for example, preinstall or postinstall). Raise an issue first to discuss.
+- Do not modify or commit `.npmrc` changes in this repository.
+
 ## Submitting a Pull Request
 
 - Pull Requests **must** be rebased to the latest version of `master`. If you just forked a repo for a PR it is already up to date. In case you forked some time ago you want to rebase it to avoid any merge conflicts:
