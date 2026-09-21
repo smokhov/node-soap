@@ -67,24 +67,14 @@ describe('ClientSSLSecurityPFX', function () {
     var options = {
       port: 1338,
       rejectUnauthorized: false,
-      //pfx: clientPfx,
-      //passphrase: 'test2test',
     };
     instance.addOptions(options);
 
-    console.log('NODE_OPTIONS:');
-    console.log(process.env.NODE_OPTIONS);
-    console.log('OPTIONS:');
-    console.log(options);
-    console.log('instance:');
-    console.log(instance);
-    console.log('SOPTIONS:');
-    console.log(soptions);
-
     var server = https.createServer(soptions, function (req, res) {
-      // Use 'true' for non-expired certs
+      // Use 'true' and 'null' for non-expired certs
       //req.socket.should.have.property('authorized', true);
       //req.socket.should.have.property('authorizationError', null);
+      // Use 'false' and 'CERT_HAS_EXPIRED' for expired certs
       req.socket.should.have.property('authorized', false);
       req.socket.should.have.property('authorizationError', 'CERT_HAS_EXPIRED');
       res.writeHead(200);
