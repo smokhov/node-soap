@@ -2080,15 +2080,20 @@ describe('Uncategorised', function () {
 
   it('should create async client without options', function (done) {
     soap.createClientAsync(__dirname + '/wsdl/default_namespace.wsdl').then(function (client) {
+console.log("CLIENT!!");
+console.log(client);
       assert.ok(client);
       done();
     });
   });
 
-  xit('should add namespace to array of objects', function (done) {
+  it('should add namespace to array of objects', function (done) {
+console.log("HERE 0000!!");
     soap
       .createClientAsync(__dirname + '/wsdl/PurchaseRequestService.wsdl')
       .then(function (client) {
+console.log("HERE!!");
+      assert.ok(client);
         const input = {
           errorProcessingLevel: 'ALL',
           groupBy: 'SUPPLIER',
@@ -2119,21 +2124,30 @@ describe('Uncategorised', function () {
           RequisitioningBUName: 'BU',
           requisitioningBUName: 'BU',
         };
+console.log('INPUT:');
+console.log(input);
         client.setSecurity(new soap.BasicAuthSecurity('username', 'password'));
+console.log("SECURITY SET!");
         client.createRequisition(input, function (err, result, rawResponse, soapHeader, rawRequest) {
           const match = rawRequest.match(/<ns1:PurchaseRequestInputReqLineInterface xmlns:.{3}="(.*?)">/);
+console.log("MATCH:");
+console.log(match);
           if (match && match.length) {
             assert.ok(match[0]);
           } else {
             assert.ok(null, `Array object don't have namesapce`);
           }
+console.log("DONE1");
           done();
         });
       })
       .catch(function (err) {
         assert.equal(err.message, 'Root element of WSDL was <html>. This is likely an authentication issue.');
+console.log("DONE2");
         done();
       });
+console.log("DONE3");
+      done();
   });
 
   it('should replace the InputMessage "Request" element for arg elements', function (done) {
