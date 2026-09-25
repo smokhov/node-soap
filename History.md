@@ -1,3 +1,12 @@
+# 1.13.1 / 2026-09-26
+
+- [FIX] Fix extension element order to respect sequence order in XML requests (#1531) 
+
+# 1.13.0 / 2026-09-20
+
+- [ENHANCEMENT] Apply `forceUseSchemaXmlns` when building a response message schema from imported XSD (#1528)
+- [DOC] Add banner in readme with the recommendation using `forceUseSchemaXmlns` for best SOAP spec support
+
 # 1.12.0 / 2026-09-10
 
 - [ENHANCEMENT] Add support for the group element and respect sequence element ordering (#1519)
