@@ -1,3 +1,7 @@
+# 1.13.3 / 2026-10-07
+
+- [FIX] Rebuild project to republish on npmjs
+
 # 1.13.2 / 2026-10-03
 
 - [FIX] Resolve an unprefixed extension base for element ordering (#1533)
